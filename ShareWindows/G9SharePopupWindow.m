@@ -82,15 +82,6 @@ CGSize ItemSize(){
     NSTimeInterval totalTime = (ItemInPageCount - 1) * ItemAnimationInterval + ItemDuration;
     self.pageControl.currentPage = 0;
     
-    CABasicAnimation *rotationAnimation;
-    rotationAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
-    rotationAnimation.toValue = [NSNumber numberWithFloat:M_PI+0.01];
-    rotationAnimation.duration = 0.4;
-    rotationAnimation.cumulative = YES;
-    rotationAnimation.fillMode=kCAFillModeForwards;
-    rotationAnimation.removedOnCompletion = NO;
-    [_btn_cancel.layer addAnimation:rotationAnimation forKey:@"totation"];
-    
     void (^showBlock)() = ^{
         for (int i=0; i < ItemInPageCount; i++) {
             ((G9shareBaseActivity *)_itemList[i]).center = (CGPoint){((G9shareBaseActivity *)_itemList[i]).center.x, ((G9shareBaseActivity *)_itemList[i]).center.y + MaskViewHeight};
@@ -102,6 +93,15 @@ CGSize ItemSize(){
         [UIView animateWithDuration:totalTime animations:^{
             self.interateView.alpha = 1;
         }];
+        [_btn_cancel.layer removeAllAnimations];
+        CABasicAnimation *rotationAnimation;
+        rotationAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
+        rotationAnimation.toValue = [NSNumber numberWithFloat:M_PI];
+        rotationAnimation.duration = 0.4;
+        rotationAnimation.cumulative = YES;
+        rotationAnimation.fillMode=kCAFillModeForwards;
+        rotationAnimation.removedOnCompletion = NO;
+        [_btn_cancel.layer addAnimation:rotationAnimation forKey:@"totation"];
     };
     
     __block UIImage *image;
@@ -127,6 +127,7 @@ CGSize ItemSize(){
 #pragma mark - private method
 - (void)dismissWithAnimation
 {
+    [_btn_cancel.layer removeAllAnimations];
     CABasicAnimation *rotationAnimation;
     rotationAnimation = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
     rotationAnimation.toValue = [NSNumber numberWithFloat: -M_PI];
