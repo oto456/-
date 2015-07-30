@@ -14,11 +14,14 @@
 #import "G9shareBaseActivity.h"
 
 #define lableFont [UIFont systemFontOfSize:11.0]
-#define LogoHeight 60
+#define LogoHeight 60.0
 #define LableWidth LogoHeight
-
 static const CGFloat LogoTitleSpace = 7;
 static const CGFloat LableHeiht = 11;
+#define ActivityHeight (LogoHeight + LableHeiht + LogoTitleSpace)
+
+
+#define RGB(c,a) [UIColor colorWithRed:((c>>16)&0xFF)/256.0  green:((c>>8)&0xFF)/256.0   blue:((c)&0xFF)/256.0   alpha:a]
 
 @interface G9shareBaseActivity ()
 
@@ -33,10 +36,13 @@ static const CGFloat LableHeiht = 11;
 {
     if (self = [super initWithFrame:(CGRect){0, 0, LableWidth, (LogoHeight + LogoTitleSpace + LableHeiht)}]) {
         [self configUI];
-        if ([self activityImage]) {
-            [self.logo setBackgroundImage:[self activityImage] forState:UIControlStateNormal];
+        if ([self activityImageNormal]) {
+            [self.logo setBackgroundImage:[self activityImageNormal] forState:UIControlStateNormal];
         }else{
         [self.logo setBackgroundImage:[UIImage imageNamed:@"about_ico"] forState:UIControlStateNormal];
+        }
+        if ([self activityImageClick]) {
+            [self.logo setBackgroundImage:[self activityImageClick] forState:UIControlStateSelected];
         }
         self.logo.enabled = [self buttonEnable];
         [self.title setText:[self activityTitle]];
@@ -54,6 +60,11 @@ static const CGFloat LableHeiht = 11;
 }
 */
 
+- (void)setAccessibilityLabel:(NSString *)accessibilityLabel
+{
+    [self.logo setAccessibilityLabel:accessibilityLabel];
+}
+
 - (void)configUI
 {
     _logo = [[UIButton alloc] initWithFrame:(CGRect){1, 0, LogoHeight, LogoHeight}];
@@ -65,6 +76,7 @@ static const CGFloat LableHeiht = 11;
     _title.font = lableFont;
     _title.textAlignment = NSTextAlignmentCenter;
     _title.numberOfLines = 2;
+    _title.textColor = RGB(0x999999, 1.0);
     
     [self addSubview:_logo];
     [self addSubview:_title];
@@ -84,7 +96,11 @@ static const CGFloat LableHeiht = 11;
     return nil;
 }
 
-- (UIImage *)activityImage
+- (UIImage *)activityImageNormal
+{
+    return nil;
+}
+- (UIImage *)activityImageClick
 {
     return nil;
 }

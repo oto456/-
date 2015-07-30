@@ -1,9 +1,9 @@
 /*
  *****************************************************************************
  * Copyright (C) 2005-2014 UC Mobile Limited. All Rights Reserved
- * File			: G9SharePopupWindow.h
+ * File			: G9SharePageControl
  *
- * Description	: 控件，下方弹出框
+ * Description	: 为了实现指示点的大小为5
  *
  * Author		: liutf@ucweb.com
  *
@@ -13,11 +13,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface G9SharePopupWindow : UIWindow
-
-- (instancetype)initWithASharedActivity:(NSArray *)shareActivity actionActivities:(NSArray *)actionActivities;
-
-- (void)show;
-
+@interface G9SharePageControl : UIPageControl
 
 @end

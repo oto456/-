@@ -1,15 +1,21 @@
-//
-//  G9SharePopupWindow.m
-//  ShareWindows
-//
-//  Created by kakapo on 15/7/29.
-//  Copyright (c) 2015年 kakapo. All rights reserved.
-//
+/*
+ *****************************************************************************
+ * Copyright (C) 2005-2014 UC Mobile Limited. All Rights Reserved
+ * File			: G9SharePopupWindow
+ *
+ * Description	: G9Share
+ *
+ * Author		: liutf@ucweb.com
+ *
+ * History		: Creation, 7/20/15, liutf@ucweb.com, Create the file
+ ******************************************************************************
+ **/
 
 #import "G9SharePopupWindow.h"
 #import "G9shareBaseActivity.h"
 #import "UIImage+REFrosted.h"
 #import "UIView+REFrosted.h"
+#import "G9SharePageControl.h"
 
 static const CGFloat LogoImgWidth = 60.0;
 static const CGFloat LogoImgHeight = LogoImgWidth;
@@ -23,7 +29,7 @@ static const CGFloat BottomViewSpace = 45;
 static const CGFloat CancelButtonWidth = 30;
 static const CGFloat CancelButtonHeight = CancelButtonWidth;
 
-static const CGFloat MaskViewHeight = 251;
+static const CGFloat MaskViewHeight = 258;
 
 static const NSTimeInterval ItemAnimationInterval = 0.04;
 static const NSTimeInterval ItemDuration = 0.4;
@@ -52,6 +58,7 @@ CGSize ItemSize(){
 @property (nonatomic, strong) UIView *buttonContainer;
 @property (nonatomic, assign) NSInteger currentIndex;
 
+
 @end
 
 @implementation G9SharePopupWindow
@@ -69,15 +76,12 @@ CGSize ItemSize(){
         for (G9shareBaseActivity *item in actionActivities) {
             [_itemList addObject:item];
         }
-        [self configAllUI];
     }
     return self;
 }
 
 - (void)show
 {
-
-    
     NSInteger ItemInPageCount = MIN(6, self.itemList.count);
     NSTimeInterval totalTime = (ItemInPageCount - 1) * ItemAnimationInterval + ItemDuration;
     self.pageControl.currentPage = 0;
@@ -90,6 +94,10 @@ CGSize ItemSize(){
             } completion:nil];
         }
         self.interateView.alpha = 0.0;
+        self.blurBackGround.alpha = 0.0;
+        [UIView animateWithDuration:0.2 animations:^{
+            self.blurBackGround.alpha = 1;
+        }];
         [UIView animateWithDuration:totalTime animations:^{
             self.interateView.alpha = 1;
         }];
@@ -106,14 +114,15 @@ CGSize ItemSize(){
     
     __block UIImage *image;
     image = [[UIApplication sharedApplication].keyWindow re_screenshot];
+    [self makeKeyAndVisible];   ///<先让window出现。 防止因为时间差按钮被点击多次
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         image = [image re_applyBlurWithRadius:7.0
                                     tintColor:[UIColor colorWithWhite:1 alpha:0.85f]
                         saturationDeltaFactor:1.8
                                     maskImage:nil];
         dispatch_async(dispatch_get_main_queue(), ^{
+            [self configAllUI];
             [self.blurBackGround setImage:image];
-            [self makeKeyAndVisible];
             showBlock();
         });
     });
@@ -145,11 +154,13 @@ CGSize ItemSize(){
         } completion:nil];
     }
     
+    [UIView animateWithDuration:0.4 animations:^{
+        self.buttonContainer.alpha = 0;
+    }];
     [UIView animateWithDuration:totalTime animations:^{
         self.interateView.alpha = 0;
-        self.blurBackGround.alpha = 0;
-        self.buttonContainer.alpha = 0;
         self.pageControl.alpha = 0;
+        self.blurBackGround.alpha = 0;
     } completion:^(BOOL finished) {
         for (int i; i < ItemInPageCount; i++) {
             ((G9shareBaseActivity *)_itemList[i]).center = (CGPoint){((G9shareBaseActivity *)_itemList[i]).center.x, ((G9shareBaseActivity *)_itemList[i]).center.y - MaskViewHeight};
@@ -205,9 +216,9 @@ CGSize ItemSize(){
     }
 
     
-    _pageControl = [[UIPageControl alloc] initWithFrame:(CGRect){0, MaskViewHeight - BottomViewSpace - IndicateButtomSpace -IndicateHeight, ScreenWidth, 20}];
-    self.pageControl.currentPageIndicatorTintColor = RGB(0x99999, 1.0);
-    self.pageControl.pageIndicatorTintColor = RGB(0xdbdbdb, 0.3);
+    _pageControl = [[G9SharePageControl alloc] initWithFrame:(CGRect){0, MaskViewHeight - BottomViewSpace - IndicateButtomSpace - IndicateHeight, ScreenWidth, 4}];
+    self.pageControl.currentPageIndicatorTintColor = RGB(0x999999, 1.0);
+    self.pageControl.pageIndicatorTintColor = RGB(0xdbdbdb, 1.0);
     self.pageControl.numberOfPages = _itemList.count/6 + 1;
     self.pageControl.userInteractionEnabled = NO;
     [self.maskView addSubview:_pageControl];
@@ -225,8 +236,8 @@ CGSize ItemSize(){
     
     _buttonContainer = [[UIView alloc] initWithFrame:(CGRect){-2, MaskViewHeight - BottomViewSpace, ScreenWidth+4, BottomViewSpace+2}];
     _buttonContainer.backgroundColor = [UIColor clearColor];
-    _buttonContainer.layer.borderColor = [RGB(0xdddddd, 1.0) CGColor];
-    _buttonContainer.layer.borderWidth = 2;
+    _buttonContainer.layer.borderColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.1].CGColor;
+    _buttonContainer.layer.borderWidth = 0.5;
     [self.maskView addSubview:_buttonContainer];
     
     _btn_cancel = [[UIButton alloc] initWithFrame:(CGRect){0, 0, CancelButtonWidth, CancelButtonHeight}];
@@ -244,6 +255,9 @@ CGSize ItemSize(){
 -(void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
     int now = (int)round((scrollView.contentOffset.x / self.scrollView.frame.size.width));
+    for (UIImageView *dot in [_pageControl subviews]) {
+        dot.bounds = (CGRect){0, 0, 5, 5};
+    }
     _currentIndex = now;
     _pageControl.currentPage = now;
 }
